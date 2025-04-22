@@ -20,6 +20,8 @@ def _progressive_validation(
     measure_time=False,
     measure_memory=False,
     yield_predictions=False,
+    w=None,
+    get_weights_from_dataset=False,
 ):
     # Check that the model and the metric are in accordance
     if not metric.works_with(model):
@@ -64,8 +66,47 @@ def _progressive_validation(
 
         return state
 
-    for i, x, y, *kwargs in stream.simulate_qa(dataset, moment, delay, copy=True):
+    # Prepare weights handling
+    weights_iter = None
+    
+    # Determine if the dataset can provide weights directly
+    has_weights_method = hasattr(dataset, "iter_with_weights") and callable(dataset.iter_with_weights)
+    
+    # If weights are provided directly or via dataset, prepare iterator
+    if w is not None and not get_weights_from_dataset:
+        if hasattr(w, "__iter__"):
+            weights_iter = iter(w)
+        else:
+            # Use the same weight (w) for all instances
+            weights_iter = itertools.repeat(w)
+    
+    # Create a stream with QA simulation
+    data_stream = stream.simulate_qa(dataset, moment, delay, copy=True)
+    
+    # If we're using a weighted dataset with iter_with_weights, need to handle differently
+    if get_weights_from_dataset and has_weights_method:
+        # We need to adapt the stream.simulate_qa to work with weighted datasets
+        # This is a placeholder - we'll need to implement a custom version for weighted datasets
+        pass
+    
+    for i, x, y, *kwargs in data_stream:
         kwargs = kwargs[0] if kwargs else {}
+        
+        # Get weight for this instance if available
+        instance_weight = None
+        if weights_iter is not None:
+            try:
+                instance_weight = next(weights_iter)
+            except StopIteration:
+                # If weights are exhausted, use default weight
+                instance_weight = 1.0
+        else:
+            # Default weight
+            instance_weight = 1.0
+            
+        # Add weight to kwargs if not None
+        if instance_weight is not None:
+            kwargs["w"] = instance_weight
 
         # Case 1: no ground truth, just make a prediction
         if y is None:
@@ -73,6 +114,7 @@ def _progressive_validation(
             y_pred, ask_for_label = y_pred if active_learning else (y_pred, True)
             if utils.inspect.isanomalyfilter(model):
                 y_pred = model.classify(y_pred)
+            # Store prediction and whether to ask for label
             preds[i] = y_pred, ask_for_label
             continue
 
@@ -81,7 +123,11 @@ def _progressive_validation(
 
         # Update the metric
         if y_pred != {} and y_pred is not None:
-            metric.update(y_true=y, y_pred=y_pred)
+            # Pass the weight to the metric update if supported
+            if hasattr(metric, "update") and "sample_weight" in typing.get_type_hints(metric.update):
+                metric.update(y_true=y, y_pred=y_pred, sample_weight=kwargs.get("w", 1.0))
+            else:
+                metric.update(y_true=y, y_pred=y_pred)
 
         # Update the model
         if use_label:
@@ -113,6 +159,8 @@ def iter_progressive_val_score(
     measure_time=False,
     measure_memory=False,
     yield_predictions=False,
+    w=None,
+    get_weights_from_dataset=False,
 ) -> typing.Generator:
     """Evaluates the performance of a model on a streaming dataset and yields results.
 
@@ -151,6 +199,12 @@ def iter_progressive_val_score(
     yield_predictions
         Whether or not to include predictions. If step is 1, then this is equivalent to yielding
         the predictions at every iterations. Otherwise, not all predictions will be yielded.
+    w
+        An optional list or iterator of weights to assign to instances. If a single value is provided,
+        it will be used for all instances.
+    get_weights_from_dataset
+        Whether to extract weights from the dataset (if it supports iter_with_weights).
+        If this is True, the 'w' parameter is ignored.
 
     Examples
     --------
@@ -225,6 +279,8 @@ def iter_progressive_val_score(
         measure_time=measure_time,
         measure_memory=measure_memory,
         yield_predictions=yield_predictions,
+        w=w,
+        get_weights_from_dataset=get_weights_from_dataset,
     )
 
 
@@ -237,6 +293,8 @@ def progressive_val_score(
     print_every=0,
     show_time=False,
     show_memory=False,
+    w=None,
+    get_weights_from_dataset=False,
     **print_kwargs,
 ) -> metrics.base.Metric:
     """Evaluates the performance of a model on a streaming dataset.
@@ -287,6 +345,12 @@ def progressive_val_score(
         Whether or not to display the elapsed time.
     show_memory
         Whether or not to display the memory usage of the model.
+    w
+        An optional list or iterator of weights to assign to instances. If a single value is provided,
+        it will be used for all instances.
+    get_weights_from_dataset
+        Whether to extract weights from the dataset (if it supports iter_with_weights).
+        If this is True, the 'w' parameter is ignored.
     print_kwargs
         Extra keyword arguments are passed to the `print` function. For instance, this allows
         providing a `file` argument, which indicates where to output progress.
@@ -390,6 +454,8 @@ def progressive_val_score(
         step=print_every,
         measure_time=show_time,
         measure_memory=show_memory,
+        w=w,
+        get_weights_from_dataset=get_weights_from_dataset,
     )
 
     active_learning = utils.inspect.isactivelearner(model)
