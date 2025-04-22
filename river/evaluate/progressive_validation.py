@@ -20,6 +20,8 @@ def _progressive_validation(
     measure_time=False,
     measure_memory=False,
     yield_predictions=False,
+    w=None,
+    get_weights_from_dataset=False,
 ):
     # Check that the model and the metric are in accordance
     if not metric.works_with(model):
@@ -63,9 +65,39 @@ def _progressive_validation(
             state["Prediction"] = y_pred
 
         return state
+    
+    # Prepare weights handling
+    weights_iter = None
+    
+    # Determine if the dataset can provide weights directly
+    has_weights_method = hasattr(dataset, "iter_with_weights") and callable(dataset.iter_with_weights)
+    
+    if w is not None and not get_weights_from_dataset:
+        if hasattr(w, "__iter__"):
+            weights_iter = iter(w)
+        else:
+            # Use the same weight (w) for all instances
+            weights_iter = itertools.repeat(w)
+
 
     for i, x, y, *kwargs in stream.simulate_qa(dataset, moment, delay, copy=True):
         kwargs = kwargs[0] if kwargs else {}
+
+        # Get weight for this instance if available
+        instance_weight = None
+        if weights_iter is not None:
+            try:
+                instance_weight = next(weights_iter)
+            except StopIteration:
+                # If weights are exhausted, use default weight
+                instance_weight = 1.0
+        else:
+            # Default weight
+            instance_weight = 1.0
+
+        # Add weight to kwargs if not None
+        if instance_weight is not None:
+            kwargs["w"] = instance_weight
 
         # Case 1: no ground truth, just make a prediction
         if y is None:
@@ -113,6 +145,8 @@ def iter_progressive_val_score(
     measure_time=False,
     measure_memory=False,
     yield_predictions=False,
+    w=None,
+    get_weights_from_dataset=False,
 ) -> typing.Generator:
     """Evaluates the performance of a model on a streaming dataset and yields results.
 
@@ -225,6 +259,8 @@ def iter_progressive_val_score(
         measure_time=measure_time,
         measure_memory=measure_memory,
         yield_predictions=yield_predictions,
+        w=None,
+        get_weights_from_dataset=False,
     )
 
 
@@ -237,6 +273,8 @@ def progressive_val_score(
     print_every=0,
     show_time=False,
     show_memory=False,
+    w=None,
+    get_weights_from_dataset=False,
     **print_kwargs,
 ) -> metrics.base.Metric:
     """Evaluates the performance of a model on a streaming dataset.
@@ -390,7 +428,9 @@ def progressive_val_score(
         step=print_every,
         measure_time=show_time,
         measure_memory=show_memory,
-    )
+        w=None,
+        get_weights_from_dataset=False,
+    )   
 
     active_learning = utils.inspect.isactivelearner(model)
 

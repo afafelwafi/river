@@ -80,7 +80,7 @@ class AdaBoostClassifier(base.WrapperEnsemble, base.Classifier):
             for _ in range(utils.random.poisson(lambda_poisson, self._rng)):
                 model.learn_one(x, y, **kwargs)
 
-            if model.predict_one(x) == y:
+            if model.predict_one(x, **kwargs) == y:
                 self.correct_weight[i] += lambda_poisson
                 lambda_poisson *= (self.correct_weight[i] + self.wrong_weight[i]) / (
                     2 * self.correct_weight[i]
@@ -175,7 +175,7 @@ class ADWINBoostingClassifier(AdaBoostClassifier):
             for _ in range(utils.random.poisson(1, self._rng)):
                 model.learn_one(x, y, **kwargs)
 
-            if model.predict_one(x) == y:
+            if model.predict_one(x, **kwargs) == y:
                 self.correct_weight[i] += lambda_poisson
                 lambda_poisson *= (self.correct_weight[i] + self.wrong_weight[i]) / (
                     2 * self.correct_weight[i]
@@ -187,7 +187,7 @@ class ADWINBoostingClassifier(AdaBoostClassifier):
                     2 * self.wrong_weight[i]
                 )
 
-            y_pred = model.predict_one(x)
+            y_pred = model.predict_one(x, **kwargs)
             error_estimation = self._drift_detectors[i].estimation
             self._drift_detectors[i].update(int(y_pred == y))
             if self._drift_detectors[i].drift_detected:
@@ -316,7 +316,7 @@ class BOLEClassifier(AdaBoostClassifier):
             for _ in range(utils.random.poisson(lambda_poisson, self._rng)):
                 self.models[pos].learn_one(x, y, **kwargs)
 
-            if self.models[pos].predict_one(x) == y:
+            if self.models[pos].predict_one(x,**kwargs) == y:
                 self.correct_weight[pos] += lambda_poisson
                 lambda_poisson *= (self.instances_seen) / (2 * self.correct_weight[pos])
                 correct = True

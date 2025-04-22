@@ -101,11 +101,11 @@ class OneClassSVM(linear_model.base.GLM, anomaly.base.AnomalyDetector):
             + 2.0 * self.intercept_lr.get(self.optimizer.n_iterations) * self.l2
         )
 
-    def learn_one(self, x):
+    def learn_one(self, x,**params):
         super().learn_one(x, y=1)
 
-    def learn_many(self, X):
+    def learn_many(self, X,**params):
         super().learn_many(X, y=pd.Series(True, index=X.index))
 
-    def score_one(self, x):
+    def score_one(self, x,**params):
         return self._raw_dot_one(x) - self.intercept

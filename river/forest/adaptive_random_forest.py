@@ -155,13 +155,13 @@ class BaseForest(base.Ensemble):
             self._init_ensemble(sorted(x.keys()))
 
         for i, model in enumerate(self):
-            y_pred = model.predict_one(x)
+            y_pred = model.predict_one(x,**kwargs)
 
             # Update performance evaluator
             self._metrics[i].update(
                 y_true=y,
                 y_pred=(
-                    model.predict_proba_one(x)
+                    model.predict_proba_one(x,**kwargs)
                     if isinstance(self.metric, metrics.base.ClassificationMetric)
                     and not self.metric.requires_labels
                     else y_pred
@@ -663,7 +663,7 @@ class ARFClassifier(BaseForest, base.Classifier):
     def _multiclass(self):
         return True
 
-    def predict_proba_one(self, x: dict) -> dict[base.typing.ClfTarget, float]:
+    def predict_proba_one(self, x: dict,**kwargs) -> dict[base.typing.ClfTarget, float]:
         y_pred: typing.Counter = collections.Counter()
 
         if len(self) == 0:
@@ -671,7 +671,7 @@ class ARFClassifier(BaseForest, base.Classifier):
             return y_pred  # type: ignore
 
         for i, model in enumerate(self):
-            y_proba_temp = model.predict_proba_one(x)
+            y_proba_temp = model.predict_proba_one(x,**kwargs)
             metric_value = self._metrics[i].get()
             if not self.disable_weighted_vote and metric_value > 0.0:
                 y_proba_temp = {k: val * metric_value for k, val in y_proba_temp.items()}
@@ -941,7 +941,7 @@ class ARFRegressor(BaseForest, base.Regressor):
             "model_selector_decay",
         }
 
-    def predict_one(self, x: dict) -> base.typing.RegTarget:
+    def predict_one(self, x: dict,**kwargs) -> base.typing.RegTarget:
         if len(self) == 0:
             self._init_ensemble(sorted(x.keys()))
             return 0.0  # type: ignore
@@ -952,7 +952,7 @@ class ARFRegressor(BaseForest, base.Regressor):
             weights = np.zeros(self.n_models)
             sum_weights = 0.0
             for i, model in enumerate(self):
-                y_pred[i] = model.predict_one(x)
+                y_pred[i] = model.predict_one(x,**kwargs)
                 weights[i] = self._metrics[i].get()
                 sum_weights += weights[i]
 

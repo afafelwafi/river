@@ -100,7 +100,7 @@ class KNNRegressor(base.Regressor):
                 f"Valid options are: {(self._MEAN, self._MEDIAN, self._WEIGHTED_MEAN)}"
             )
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         self._nn.append((x, y))
 
     def predict_one(self, x, **kwargs):

@@ -43,13 +43,13 @@ class SuccessiveHalving(abc.ABC):
         """The current best model."""
         return self.models[self._best_model_idx]
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         for i in self._rankings[: self._s]:
             model = self.models[i]
             metric = self._metrics[i]
             y_pred = self._pred_func(model)(x)
             metric.update(y_true=y, y_pred=y_pred)
-            model.learn_one(x, y)
+            model.learn_one(x, y,**kwargs)
 
             # Check for a new best model
             if metric.is_better_than(self._metrics[self._best_model_idx]):
@@ -240,8 +240,8 @@ class SuccessiveHalvingRegressor(SuccessiveHalving, ModelSelectionRegressor):
     def _pred_func(self, model):
         return model.predict_one
 
-    def predict_one(self, x):
-        return self.best_model.predict_one(x)
+    def predict_one(self, x,**kwargs):
+        return self.best_model.predict_one(x,**kwargs)
 
     @classmethod
     def _unit_test_params(cls):
@@ -402,8 +402,8 @@ class SuccessiveHalvingClassifier(SuccessiveHalving, ModelSelectionClassifier):
             return model.predict_one
         return model.predict_proba_one
 
-    def predict_proba_one(self, x):
-        return self.best_model.predict_proba_one(x)
+    def predict_proba_one(self, x,**kwargs):
+        return self.best_model.predict_proba_one(x,**kwargs)
 
     def _multiclass(self):
         return all(model._multiclass for model in self.models)

@@ -82,8 +82,8 @@ class LeafModelMultiTarget(LeafMeanMultiTarget):
                 sign = inspect.signature(self._leaf_models[t].learn_one).parameters
                 self._model_supports_weights[t] = "sample_weight" in sign or "w" in sign
 
-    def learn_one(self, x, y, *, w=1.0, tree=None):
-        super().learn_one(x, y, w=w, tree=tree)
+    def learn_one(self, x, y, *, w=1.0, tree=None,**kwargs):
+        super().learn_one(x, y, w=w, tree=tree,**kwargs)
 
         for target_id, y_ in y.items():
             try:
@@ -107,14 +107,14 @@ class LeafModelMultiTarget(LeafMeanMultiTarget):
 
             # Now the proper training
             if self._model_supports_weights[target_id]:
-                model.learn_one(x, y_, w)
+                model.learn_one(x, y_, w,**kwargs)
             else:
                 for _ in range(int(w)):
-                    model.learn_one(x, y_)
+                    model.learn_one(x, y_,**kwargs)
 
-    def prediction(self, x, *, tree=None):
+    def prediction(self, x, *, tree=None,**kwargs):
         return {
-            t: self._leaf_models[t].predict_one(x) if t in self._leaf_models else 0.0
+            t: self._leaf_models[t].predict_one(x,**kwargs) if t in self._leaf_models else 0.0
             for t in tree.targets
         }
 
@@ -145,7 +145,7 @@ class LeafAdaptiveMultiTarget(LeafModelMultiTarget):
         self._fmse_mean = collections.defaultdict(float)
         self._fmse_model = collections.defaultdict(float)
 
-    def learn_one(self, x, y, *, w=1.0, tree=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None,**kwargs):
         pred_mean = {t: self.stats[t].mean.get() if t in self.stats else 0.0 for t in tree.targets}
         pred_model = super().prediction(x, tree=tree)
 
@@ -159,14 +159,14 @@ class LeafAdaptiveMultiTarget(LeafModelMultiTarget):
 
         super().learn_one(x, y, w=w, tree=tree)
 
-    def prediction(self, x, *, tree=None):
+    def prediction(self, x, *, tree=None,**kwargs):
         pred = {}
         for t in tree.targets:
             if self._fmse_mean[t] < self._fmse_model[t]:  # Act as a regression tree
                 pred[t] = self.stats[t].mean.get() if t in self.stats else 0.0
             else:  # Act as a model tree
                 try:
-                    pred[t] = self._leaf_models[t].predict_one(x)
+                    pred[t] = self._leaf_models[t].predict_one(x,**kwargs)
                 except KeyError:
                     pred[t] = 0.0
         return pred

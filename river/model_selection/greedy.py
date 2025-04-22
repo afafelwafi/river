@@ -59,11 +59,11 @@ class GreedyRegressor(ModelSelectionRegressor):
         self._best_model = None
         self._best_metric = self.metrics[0]
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         for model, metric in zip(self, self.metrics):
-            y_pred = model.predict_one(x)
+            y_pred = model.predict_one(x,**kwargs)
             metric.update(y, y_pred)
-            model.learn_one(x, y)
+            model.learn_one(x, y,**kwargs)
 
             if metric.is_better_than(self._best_metric):
                 self._best_model = model

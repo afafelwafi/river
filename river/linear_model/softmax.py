@@ -76,13 +76,13 @@ class SoftmaxRegression(base.Classifier):
     def _multiclass(self):
         return True
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         # Some optimizers need to do something before a prediction is made
         for label, weights in self.weights.items():
             self.optimizers[label].look_ahead(w=weights)
 
         # Make a prediction for the given features
-        y_pred = self.predict_proba_one(x)
+        y_pred = self.predict_proba_one(x,**kwargs)
 
         # Compute the gradient of the loss w.r.t. each label
         loss_gradients = self.loss.gradient(y_true=y, y_pred=y_pred)
@@ -93,7 +93,7 @@ class SoftmaxRegression(base.Classifier):
             gradient = {i: xi * loss + self.l2 * weights.get(i, 0) for i, xi in x.items()}
             self.weights[label] = self.optimizers[label].step(w=weights, g=gradient)
 
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x,**kwargs):
         return utils.math.softmax(
             {label: utils.math.dot(weights, x) for label, weights in self.weights.items()}
         )

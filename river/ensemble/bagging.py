@@ -227,7 +227,7 @@ class ADWINBaggingClassifier(BaggingClassifier):
             for _ in range(utils.random.poisson(1, self._rng)):
                 model.learn_one(x, y, **kwargs)
 
-            y_pred = model.predict_one(x)
+            y_pred = model.predict_one(x,**kwargs)
             error_estimation = self._drift_detectors[i].estimation
             self._drift_detectors[i].update(int(y_pred == y))
             if self._drift_detectors[i].drift_detected:
@@ -356,7 +356,7 @@ class LeveragingBaggingClassifier(BaggingClassifier):
         y = kwargs["y"]
         i = kwargs["model_idx"]
         error = self._drift_detectors[i].estimation
-        y_pred = self.models[i].predict_one(x)
+        y_pred = self.models[i].predict_one(x,**kwargs)
         if y_pred != y:
             k = 1
         elif error != 1.0 and self._rng.rand() < (error / (1.0 - error)):
@@ -385,7 +385,7 @@ class LeveragingBaggingClassifier(BaggingClassifier):
             for _ in range(k):
                 model.learn_one(x, y, **kwargs)
 
-            y_pred = self[i].predict_one(x)
+            y_pred = self[i].predict_one(x,**kwargs)
             if y_pred is not None:
                 incorrectly_classifies = int(y_pred != y)
                 error = self._drift_detectors[i].estimation

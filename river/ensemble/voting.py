@@ -59,11 +59,11 @@ class VotingClassifier(base.Classifier, base.Ensemble):
     def _multiclass(self):
         return all(model._multiclass for model in self)
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y, **kwargs):
         for model in self:
             model.learn_one(x, y)
 
-    def predict_one(self, x):
+    def predict_one(self, x, **kwargs):
         if self.use_probabilities:
             votes = (model.predict_proba_one(x) for model in self)
         else:

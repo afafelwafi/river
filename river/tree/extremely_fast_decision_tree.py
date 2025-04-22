@@ -205,7 +205,7 @@ class ExtremelyFastDecisionTreeClassifier(HoeffdingTreeClassifier):
             else:
                 return EFDTNominalMultiwayBranch
 
-    def learn_one(self, x, y, *, w=1.0):
+    def learn_one(self, x, y, *, w=1.0,**kwargs):
         """Incrementally train the model
 
         Parameters

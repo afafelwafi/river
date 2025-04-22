@@ -62,10 +62,10 @@ class TargetTransformRegressor(base.Wrapper, base.Regressor):
 
     def _update(self, y): ...
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         self._update(y)
-        self.regressor.learn_one(x, self.func(y))
+        self.regressor.learn_one(x, self.func(y),**kwargs)
 
-    def predict_one(self, x):
-        y_pred = self.regressor.predict_one(x)
+    def predict_one(self, x,**kwargs):
+        y_pred = self.regressor.predict_one(x,**kwargs)
         return self.inverse_func(y_pred)

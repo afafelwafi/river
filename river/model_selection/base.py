@@ -44,10 +44,10 @@ class ModelSelectionRegressor(ModelSelector, base.Regressor):
 
     """
 
-    def predict_one(self, x):
+    def predict_one(self, x, **kwargs):
         if self.best_model is None:
-            return self.models[0].predict_one(x)
-        return self.best_model.predict_one(x)
+            return self.models[0].predict_one(x,**kwargs)
+        return self.best_model.predict_one(x,**kwargs)
 
     @classmethod
     def _unit_test_params(cls):
@@ -88,10 +88,10 @@ class ModelSelectionClassifier(ModelSelector, base.Classifier):
 
     """
 
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x, **kwargs):
         if self.best_model is None:
-            return self.models[0].predict_proba_one(x)
-        return self.best_model.predict_proba_one(x)
+            return self.models[0].predict_proba_one(x,**kwargs)
+        return self.best_model.predict_proba_one(x,**kwargs)
 
     @classmethod
     def _unit_test_params(cls):

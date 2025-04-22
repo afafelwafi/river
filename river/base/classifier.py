@@ -15,7 +15,7 @@ class Classifier(estimator.Estimator):
     """A classifier."""
 
     @abc.abstractmethod
-    def learn_one(self, x: dict, y: base.typing.ClfTarget) -> None:
+    def learn_one(self, x: dict, y: base.typing.ClfTarget,**kwargs) -> None:
         """Update the model with a set of features `x` and a label `y`.
 
         Parameters
@@ -63,7 +63,7 @@ class Classifier(estimator.Estimator):
 
         # The following code acts as a default for each classifier, and may be overridden on an
         # individual basis.
-        y_pred = self.predict_proba_one(x, **kwargs)
+        y_pred = self.predict_proba_one(x)
         if y_pred:
             return max(y_pred, key=y_pred.get)  # type: ignore
         return None

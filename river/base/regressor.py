@@ -15,7 +15,7 @@ class Regressor(estimator.Estimator):
     """A regressor."""
 
     @abc.abstractmethod
-    def learn_one(self, x: dict, y: base.typing.RegTarget) -> None:
+    def learn_one(self, x: dict, y: base.typing.RegTarget,**kwargs) -> None:
         """Fits to a set of features `x` and a real-valued target `y`.
 
         Parameters
@@ -28,7 +28,7 @@ class Regressor(estimator.Estimator):
         """
 
     @abc.abstractmethod
-    def predict_one(self, x: dict) -> base.typing.RegTarget:
+    def predict_one(self, x: dict,**kwargs) -> base.typing.RegTarget:
         """Predict the output of features `x`.
 
         Parameters

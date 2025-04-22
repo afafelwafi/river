@@ -365,7 +365,7 @@ class MondrianTreeRegressor(MondrianTree, base.Regressor):
                 # We go up to the root in the tree
                 current_node = current_node.parent
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y, **params):
         # Setting current sample
         self._x = x
         self._y = y
@@ -378,7 +378,7 @@ class MondrianTreeRegressor(MondrianTree, base.Regressor):
         # Incrementing iteration
         self.iteration += 1
 
-    def predict_one(self, x):
+    def predict_one(self, x, **params):
         """Predict the label of the samples.
 
         Parameters

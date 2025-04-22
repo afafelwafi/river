@@ -38,7 +38,7 @@ class AdaptiveRegressor(base.Regressor):
         self._mae_mean = 0.0
         self._mae_model = 0.0
 
-    def learn_one(self, x: dict, y: base.typing.RegTarget, w: int = 1):
+    def learn_one(self, x: dict, y: base.typing.RegTarget, w: int = 1,**kwargs):
         abs_error_mean = abs(y - self.mean_predictor.predict_one(x))  # type: ignore
         abs_error_model = abs(y - self.model_predictor.predict_one(x))  # type: ignore
 
@@ -50,11 +50,11 @@ class AdaptiveRegressor(base.Regressor):
         for _ in range(int(w)):
             self.model_predictor.learn_one(x, y)
 
-    def predict_one(self, x: dict):
+    def predict_one(self, x: dict,**kwargs):
         if self._mae_mean <= self._mae_model:
-            return self.mean_predictor.predict_one(x)
+            return self.mean_predictor.predict_one(x,**kwargs)
         else:
-            return self.model_predictor.predict_one(x)
+            return self.model_predictor.predict_one(x,**kwargs)
 
 
 class RegRule(HoeffdingRule, base.Regressor, anomaly.base.AnomalyDetector):
@@ -140,11 +140,11 @@ class RegRule(HoeffdingRule, base.Regressor, anomaly.base.AnomalyDetector):
 
         return score / hits if hits > 0 else 0.0
 
-    def learn_one(self, x: dict, y: base.typing.RegTarget, w: int = 1):  # type: ignore
+    def learn_one(self, x: dict, y: base.typing.RegTarget, w: int = 1,**kwargs):  # type: ignore
         self.update(x, y, w)
         self.pred_model.learn_one(x, y, w)
 
-    def predict_one(self, x: dict):
+    def predict_one(self, x: dict,**kwargs):
         return self.pred_model.predict_one(x)
 
 
@@ -351,7 +351,7 @@ class AMRules(base.Regressor):
             drift_detector=self.drift_detector.clone(),
         )
 
-    def learn_one(self, x: dict, y: base.typing.RegTarget, w: int = 1):
+    def learn_one(self, x: dict, y: base.typing.RegTarget, w: int = 1,**kwargs):
         any_covered = False
         to_del = set()
 
@@ -363,7 +363,7 @@ class AMRules(base.Regressor):
             if rule.total_weight > self.m_min and rule.score_one(x) < self.anomaly_threshold:
                 continue
 
-            y_pred = rule.predict_one(x)
+            y_pred = rule.predict_one(x,**kwargs)
 
             in_drift = rule.drift_test(y, y_pred)  # noqa
             if in_drift:
@@ -372,7 +372,7 @@ class AMRules(base.Regressor):
                 continue
 
             any_covered = True
-            rule.learn_one(x, y, w)
+            rule.learn_one(x, y, w,**kwargs)
 
             if rule.total_weight - rule.last_expansion_attempt_at >= self.n_min:
                 updated_rule, expanded = rule.expand(self.delta, self.tau)
@@ -386,7 +386,7 @@ class AMRules(base.Regressor):
                 break
 
         if not any_covered:
-            self._default_rule.learn_one(x, y, w)
+            self._default_rule.learn_one(x, y, w,**kwargs)
 
             expanded = False
             if (
@@ -406,13 +406,13 @@ class AMRules(base.Regressor):
         for rule_id in to_del:
             del self._rules[rule_id]
 
-    def predict_one(self, x: dict) -> base.typing.RegTarget:
+    def predict_one(self, x: dict,**kwargs) -> base.typing.RegTarget:
         y_pred = 0
         hits = 0
 
         for rule in self._rules.values():
             if rule.covers(x):
-                y_pred += rule.predict_one(x)
+                y_pred += rule.predict_one(x,**kwargs)
                 hits += 1
 
                 if self.ordered_rule_set:
@@ -421,7 +421,7 @@ class AMRules(base.Regressor):
         if hits > 0:
             return y_pred / hits  # type: ignore
         else:
-            return self._default_rule.predict_one(x)
+            return self._default_rule.predict_one(x,**kwargs)
 
     def anomaly_score(self, x) -> tuple[float, float, float]:
         """Aggregated anomaly score computed using all the rules that cover the input instance.

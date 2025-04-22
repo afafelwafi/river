@@ -74,7 +74,7 @@ class StochasticGradientTree(base.Estimator, abc.ABC):
         """
         return y
 
-    def learn_one(self, x, y, *, w=1.0):
+    def learn_one(self, x, y, *, w=1.0,**kwargs):
         self._n_observations += w
 
         """ Update Stochastic Gradient Tree with a single instance. """
@@ -291,7 +291,7 @@ class SGTClassifier(StochasticGradientTree, base.Classifier):
     def _target_transform(self, y):
         return float(y)
 
-    def predict_proba_one(self, x: dict) -> dict[base.typing.ClfTarget, float]:
+    def predict_proba_one(self, x: dict,**kwargs) -> dict[base.typing.ClfTarget, float]:
         if isinstance(self._root, DTBranch):
             leaf = self._root.traverse(x, until_leaf=True)
         else:
@@ -403,7 +403,7 @@ class SGTRegressor(StochasticGradientTree, base.Regressor):
             feature_quantizer=feature_quantizer,
         )
 
-    def predict_one(self, x: dict) -> base.typing.RegTarget:
+    def predict_one(self, x: dict,**kwargs) -> base.typing.RegTarget:
         if isinstance(self._root, DTBranch):
             leaf = self._root.traverse(x, until_leaf=True)
         else:

@@ -10,7 +10,7 @@ class MultiLabelClassifier(Estimator, abc.ABC):
     """Multi-label classifier."""
 
     @abc.abstractmethod
-    def learn_one(self, x: dict, y: dict[FeatureName, bool]) -> None:
+    def learn_one(self, x: dict, y: dict[FeatureName, bool],**kwargs) -> None:
         """Update the model with a set of features `x` and the labels `y`.
 
         Parameters

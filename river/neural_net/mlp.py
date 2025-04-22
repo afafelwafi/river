@@ -305,7 +305,7 @@ class MLPRegressor(base.Regressor, MLP):
             return pd.DataFrame({0: 0}, index=X.index)
         return self(X)
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y, **kwargs):
         # Multi-output
         if isinstance(y, dict):
             self.learn_many(X=pd.DataFrame([x]), y=pd.DataFrame([y]))
@@ -314,7 +314,7 @@ class MLPRegressor(base.Regressor, MLP):
         # Single output
         self.learn_many(X=pd.DataFrame([x]), y=pd.Series([y]))
 
-    def predict_one(self, x):
+    def predict_one(self, x, **kwargs):
         y_pred = self.predict_many(X=pd.DataFrame([x]))
 
         # Multi-output

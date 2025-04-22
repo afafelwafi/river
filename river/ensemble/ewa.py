@@ -120,8 +120,8 @@ class EWARegressor(base.Ensemble, base.Regressor):
 
         return y_pred_mean
 
-    def learn_one(self, x, y):
-        self.learn_predict_one(x, y)
+    def learn_one(self, x, y,**kwargs):
+        self.learn_predict_one(x, y,**kwargs)
 
-    def predict_one(self, x):
-        return sum(model.predict_one(x) * weight for model, weight in zip(self, self.weights))
+    def predict_one(self, x,**kwargs):
+        return sum(model.predict_one(x,**kwargs) * weight for model, weight in zip(self, self.weights))

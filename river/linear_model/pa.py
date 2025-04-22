@@ -87,7 +87,7 @@ class PARegressor(BasePA, base.Regressor):
         self.eps = eps
         self.loss = optim.losses.EpsilonInsensitiveHinge(eps=eps)
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         y_pred = self.predict_one(x)
         tau = self.calc_tau(x, self.loss(y, y_pred))
         step = tau * np.sign(y - y_pred)
@@ -97,7 +97,7 @@ class PARegressor(BasePA, base.Regressor):
         if self.learn_intercept:
             self.intercept += step
 
-    def predict_one(self, x):
+    def predict_one(self, x,**kwargs):
         return utils.math.dot(x, self.weights) + self.intercept
 
 
