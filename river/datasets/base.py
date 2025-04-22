@@ -1,4 +1,3 @@
-# Modified Dataset base class to support weights
 from __future__ import annotations
 
 import abc
@@ -12,7 +11,6 @@ import tarfile
 import typing
 import zipfile
 from urllib import request
-from typing import Iterator, Tuple, Dict, Any, Optional, Union
 
 from river import utils
 
@@ -78,47 +76,10 @@ class Dataset(abc.ABC):
         self.n_outputs = n_outputs
         self.n_classes = n_classes
         self.sparse = sparse
-        # Default weight for instances if not specified
-        self._default_weight = 1.0
 
     @abc.abstractmethod
-    def __iter__(self) -> Iterator[Tuple[Dict, Any]]:
-        """Yield instances as (x, y) tuples."""
+    def __iter__(self):
         raise NotImplementedError
-
-    def iter_with_weights(self) -> Iterator[Tuple[Dict, Any, float]]:
-        """Yield instances with weights as (x, y, w) tuples.
-
-        By default, this method yields the default weight (1.0) for each instance.
-        Subclasses can override this method to provide custom weights.
-
-        Returns
-        -------
-        Iterator[Tuple[Dict, Any, float]]
-            An iterator over (features, target, weight) tuples.
-        """
-        for x, y in self:
-            yield x, y, self._default_weight
-
-    def with_weights(self, weights=None) -> 'WeightedDataset':
-        """Create a weighted version of this dataset.
-
-        Parameters
-        ----------
-        weights : Union[float, list, dict, callable], optional
-            The weights to use for each instance. Can be:
-            - A single float value to use the same weight for all instances
-            - A list of weights (must have the same length as the dataset if n_samples is known)
-            - A dictionary mapping indices to weights
-            - A callable that takes (x, y) and returns a weight
-            If None, the default weight (1.0) is used for all instances.
-
-        Returns
-        -------
-        WeightedDataset
-            A dataset that yields weighted instances.
-        """
-        return WeightedDataset(self, weights)
 
     def take(self, k: int):
         """Iterate over the k samples."""
@@ -171,92 +132,6 @@ class Dataset(abc.ABC):
             out += f"\n\nParameters\n----------{params}"
 
         return out
-
-
-class WeightedDataset(Dataset):
-    """A dataset wrapper that adds weights to instances.
-
-    Parameters
-    ----------
-    dataset : Dataset
-        The base dataset to wrap.
-    weights : Union[float, list, dict, callable], optional
-        The weights to use for each instance. Can be:
-        - A single float value to use the same weight for all instances
-        - A list of weights (must have the same length as the dataset if n_samples is known)
-        - A dictionary mapping indices to weights (for sparse weight assignments)
-        - A callable that takes (x, y) and returns a weight
-        If None, the default weight (1.0) is used for all instances.
-    """
-
-    def __init__(
-        self,
-        dataset: Dataset,
-        weights: Union[float, list, dict, callable] = None,
-    ):
-        super().__init__(
-            task=dataset.task,
-            n_features=dataset.n_features,
-            n_samples=dataset.n_samples,
-            n_classes=dataset.n_classes,
-            n_outputs=dataset.n_outputs,
-            sparse=dataset.sparse,
-        )
-        self.dataset = dataset
-        self.weights = weights
-
-    def __iter__(self):
-        """Yield instances as (x, y) tuples."""
-        for x, y, _ in self.iter_with_weights():
-            yield x, y
-
-    def iter_with_weights(self):
-        """Yield instances with weights as (x, y, w) tuples.
-
-        Returns
-        -------
-        Iterator[Tuple[Dict, Any, float]]
-            An iterator over (features, target, weight) tuples.
-        """
-        weights = self.weights
-        
-        # If weights is a single float value
-        if isinstance(weights, (int, float)):
-            for x, y in self.dataset:
-                yield x, y, float(weights)
-            return
-        
-        # If weights is a list
-        if isinstance(weights, list):
-            if self.n_samples and len(weights) != self.n_samples:
-                raise ValueError(f"Expected {self.n_samples} weights, got {len(weights)}")
-            for (x, y), w in zip(self.dataset, weights):
-                yield x, y, float(w)
-            return
-        
-        # If weights is a dictionary mapping indices to weights
-        if isinstance(weights, dict):
-            for i, (x, y) in enumerate(self.dataset):
-                yield x, y, float(weights.get(i, 1.0))
-            return
-        
-        # If weights is a callable that takes (x, y) and returns a weight
-        if callable(weights):
-            for x, y in self.dataset:
-                yield x, y, float(weights(x, y))
-            return
-            
-        # Default: use default weight of 1.0
-        for x, y in self.dataset:
-            yield x, y, 1.0
-
-    @property
-    def _repr_content(self):
-        content = super()._repr_content
-        content["Name"] = f"WeightedDataset({self.dataset.__class__.__name__})"
-        weight_type = type(self.weights).__name__ if self.weights is not None else "default"
-        content["Weights"] = weight_type
-        return content
 
 
 class SyntheticDataset(Dataset):
