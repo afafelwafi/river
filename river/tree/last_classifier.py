@@ -275,7 +275,7 @@ class LASTClassifier(HoeffdingTreeClassifier, base.Classifier):
                 # Manage memory
                 self._enforce_size_limit()
 
-    def learn_one(self, x, y, *, w=1.0):
+    def learn_one(self, x, y, *, w=1.0,**kwargs):
         """Train the model on instance x and corresponding target y.
 
         Parameters
@@ -323,7 +323,7 @@ class LASTClassifier(HoeffdingTreeClassifier, base.Classifier):
             node = self._root
 
         if isinstance(node, HTLeaf):
-            node.learn_one(x, y, w=w, tree=self)
+            node.learn_one(x, y, w=w, tree=self,**kwargs)
             if self._growth_allowed and node.is_active():
                 if node.depth >= self.max_depth:  # Max depth reached
                     node.deactivate()
@@ -357,7 +357,7 @@ class LASTClassifier(HoeffdingTreeClassifier, base.Classifier):
                 if isinstance(node, HTLeaf):
                     break
             # Learn from the sample
-            node.learn_one(x, y, w=w, tree=self)
+            node.learn_one(x, y, w=w, tree=self,**kwargs)
 
         if self._train_weight_seen_by_model % self.memory_estimate_period == 0:
             self._estimate_model_size()

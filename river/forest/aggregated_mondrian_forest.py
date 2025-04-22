@@ -184,7 +184,7 @@ class AMFClassifier(AMFLearner, base.Classifier):
             )
             self.data.append(tree)
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         # Updating the previously seen classes with the new sample
         self._classes.add(y)
 
@@ -194,9 +194,9 @@ class AMFClassifier(AMFLearner, base.Classifier):
 
         # we fit all the trees using the new sample
         for tree in self:
-            tree.learn_one(x, y)
+            tree.learn_one(x, y,**kwargs)
 
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x,**kwargs):
         # Checking that the model has been trained once at least
         # Otherwise return the default empty dict
         if not self._is_initialized:
@@ -207,7 +207,7 @@ class AMFClassifier(AMFLearner, base.Classifier):
 
         # Simply computes the prediction for each tree and average it
         for tree in self:
-            predictions = tree.predict_proba_one(x)
+            predictions = tree.predict_proba_one(x,**kwargs)
             for c in self._classes:
                 scores[c] += predictions[c] / self.n_estimators
 
@@ -304,18 +304,18 @@ class AMFRegressor(AMFLearner, base.Regressor):
             )
             self.data.append(tree)
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         # Checking if the forest has been created
         if not self._is_initialized:
             self._initialize_trees()
 
         # we fit all the trees using the new sample
         for tree in self:
-            tree.learn_one(x, y)
+            tree.learn_one(x, y,**kwargs)
 
         self.iteration += 1
 
-    def predict_one(self, x):
+    def predict_one(self, x,**kwargs):
         # Checking that the model has been trained once at least
         if not self._is_initialized:
             return None
@@ -323,7 +323,7 @@ class AMFRegressor(AMFLearner, base.Regressor):
         prediction = 0
         for tree in self:
             tree.use_aggregation = self.use_aggregation
-            prediction += tree.predict_one(x)
+            prediction += tree.predict_one(x,**kwargs)
         prediction = prediction / self.n_estimators
 
         return prediction

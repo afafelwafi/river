@@ -26,7 +26,7 @@ class AnomalyDetector(base.Estimator):
         """
 
     @abc.abstractmethod
-    def score_one(self, x: dict) -> float:
+    def score_one(self, x: dict,**kwargs) -> float:
         """Return an outlier score.
 
         A high score is indicative of an anomaly. A low score corresponds to a normal observation.

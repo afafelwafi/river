@@ -13,7 +13,7 @@ class Clusterer(estimator.Estimator):
         return False
 
     @abc.abstractmethod
-    def learn_one(self, x: dict) -> None:
+    def learn_one(self, x: dict,**kwargs) -> None:
         """Update the model with a set of features `x`.
 
         Parameters
@@ -24,7 +24,7 @@ class Clusterer(estimator.Estimator):
         """
 
     @abc.abstractmethod
-    def predict_one(self, x: dict) -> int:
+    def predict_one(self, x: dict,**kwargs) -> int:
         """Predicts the cluster number for a set of features `x`.
 
         Parameters

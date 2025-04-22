@@ -149,7 +149,7 @@ class HTLeaf(Leaf, abc.ABC):
             del self.splitters[att_id]
             self._disabled_attrs.add(att_id)
 
-    def learn_one(self, x, y, *, w=1.0, tree=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None,**kwargs):
         """Update the node with the provided sample.
 
         Parameters

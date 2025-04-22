@@ -47,7 +47,7 @@ class AdaLeafRegressor(HTLeaf):
     def kill_tree_children(self, hatr):
         pass
 
-    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None,**kwargs):
         y_pred = self.prediction(x, tree=tree)
 
         if tree.bootstrap_sampling:
@@ -69,7 +69,7 @@ class AdaLeafRegressor(HTLeaf):
             self._error_tracker = self._error_tracker.clone()
 
         # Update learning model
-        super().learn_one(x, y, w=w, tree=tree)
+        super().learn_one(x, y, w=w, tree=tree,**kwargs)
 
         weight_seen = self.total_weight
 
@@ -149,7 +149,7 @@ class AdaBranchRegressor(DTBranch):
             if isinstance(child, AdaBranchRegressor) and child._alternate_tree:
                 yield from child._alternate_tree.iter_leaves()
 
-    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None,**kwargs):
         leaf = super().traverse(x, until_leaf=True)
         y_pred = leaf.prediction(x, tree=tree)
 
@@ -228,6 +228,7 @@ class AdaBranchRegressor(DTBranch):
                 tree=tree,
                 parent=parent,
                 parent_branch=parent_branch,
+                **kwargs
             )
         try:
             child = self.next(x)
@@ -242,6 +243,7 @@ class AdaBranchRegressor(DTBranch):
                 tree=tree,
                 parent=self,
                 parent_branch=self.branch_no(x),
+                **kwargs
             )
         else:
             # Instance contains a categorical value previously unseen by the split node
@@ -257,6 +259,7 @@ class AdaBranchRegressor(DTBranch):
                     tree=tree,
                     parent=self,
                     parent_branch=self.branch_no(x),
+                    **kwargs
                 )
             # The split feature is missing in the instance. Hence, we pass the new example
             # to the most traversed path in the current subtree

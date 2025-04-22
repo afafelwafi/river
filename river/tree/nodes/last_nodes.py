@@ -34,7 +34,7 @@ class LeafMajorityClassWithDetector(LeafMajorityClass):
             split_criterion  # if None, the change detector will have binary inputs
         )
 
-    def learn_one(self, x, y, *, w=1, tree=None):
+    def learn_one(self, x, y, *, w=1, tree=None,**kwargs):
         self.update_stats(y, w)
         if self.is_active():
             if self.split_criterion is None:
@@ -72,7 +72,7 @@ class LeafNaiveBayesWithDetector(LeafMajorityClassWithDetector):
     def __init__(self, stats, depth, splitter, change_detector, split_criterion=None, **kwargs):
         super().__init__(stats, depth, splitter, change_detector, split_criterion, **kwargs)
 
-    def learn_one(self, x, y, *, w=1, tree=None):
+    def learn_one(self, x, y, *, w=1, tree=None,**kwargs):
         self.update_stats(y, w)
         if self.is_active():
             if self.split_criterion is None:
@@ -131,7 +131,7 @@ class LeafNaiveBayesAdaptiveWithDetector(LeafMajorityClassWithDetector):
         self._mc_correct_weight = 0.0
         self._nb_correct_weight = 0.0
 
-    def learn_one(self, x, y, *, w=1.0, tree=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None,**kwargs):
         """Update the node with the provided instance.
 
         Parameters

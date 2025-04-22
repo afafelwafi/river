@@ -228,18 +228,18 @@ class HoeffdingAdaptiveTreeRegressor(HoeffdingTreeRegressor):
         )
         return summ
 
-    def learn_one(self, x, y, *, w=1.0):
+    def learn_one(self, x, y, *, w=1.0,**kwargs):
         self._train_weight_seen_by_model += w
 
         if self._root is None:
             self._root = self._new_leaf()
             self._n_active_leaves = 1
-        self._root.learn_one(x, y, w=w, tree=self)
+        self._root.learn_one(x, y, w=w, tree=self,**kwargs)
 
         if self._train_weight_seen_by_model % self.memory_estimate_period == 0:
             self._estimate_model_size()
 
-    def predict_one(self, x):
+    def predict_one(self, x,**kwargs):
         pred = 0.0
         if self._root is not None:
             found_nodes = [self._root]

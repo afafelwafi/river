@@ -218,7 +218,7 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         )
         return summ
 
-    def learn_one(self, x, y, *, w=1.0):
+    def learn_one(self, x, y, *, w=1.0,**kwargs):
         # Updates the set of observed classes
         self.classes.add(y)
 
@@ -228,13 +228,13 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
             self._root = self._new_leaf()
             self._n_active_leaves = 1
 
-        self._root.learn_one(x, y, w=w, tree=self)
+        self._root.learn_one(x, y, w=w, tree=self,**kwargs)
 
         if self._train_weight_seen_by_model % self.memory_estimate_period == 0:
             self._estimate_model_size()
 
     # Override HoeffdingTreeClassifier
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x,**kwargs):
         proba = {c: 0.0 for c in self.classes}
         if self._root is not None:
             found_nodes = [self._root]

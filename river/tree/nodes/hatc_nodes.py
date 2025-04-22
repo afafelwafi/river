@@ -48,7 +48,7 @@ class AdaLeafClassifier(LeafNaiveBayesAdaptive):
     def kill_tree_children(self, hat):
         pass
 
-    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None,**kwargs):
         if tree.bootstrap_sampling:
             # Perform bootstrap-sampling
             k = poisson(rate=1, rng=self.rng)
@@ -72,7 +72,7 @@ class AdaLeafClassifier(LeafNaiveBayesAdaptive):
             self._mean_error = self._mean_error.clone()
 
         # Update statistics
-        super().learn_one(x, y, w=w, tree=tree)
+        super().learn_one(x, y, w=w, tree=tree,**kwargs)
 
         weight_seen = self.total_weight
 
@@ -177,7 +177,7 @@ class AdaBranchClassifier(DTBranch):
             if isinstance(child, AdaBranchClassifier) and child._alternate_tree:
                 yield from child._alternate_tree.iter_leaves()
 
-    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None, parent=None, parent_branch=None,**kwargs):
         leaf = super().traverse(x, until_leaf=True)
         aux = leaf.prediction(x, tree=tree)
         y_pred = max(aux, key=aux.get) if aux else None
@@ -255,6 +255,7 @@ class AdaBranchClassifier(DTBranch):
                 tree=tree,
                 parent=parent,
                 parent_branch=parent_branch,
+                **kwargs
             )
 
         try:
@@ -270,6 +271,7 @@ class AdaBranchClassifier(DTBranch):
                 tree=tree,
                 parent=self,
                 parent_branch=self.branch_no(x),
+                **kwargs
             )
         else:
             # Instance contains a categorical value previously unseen by the split node
@@ -285,6 +287,7 @@ class AdaBranchClassifier(DTBranch):
                     tree=tree,
                     parent=self,
                     parent_branch=self.branch_no(x),
+                    **kwargs
                 )
             # The split feature is missing in the instance. Hence, we pass the new example
             # to the most traversed path in the current subtree

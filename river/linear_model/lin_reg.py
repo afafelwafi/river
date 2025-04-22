@@ -128,7 +128,7 @@ class LinearRegression(linear_model.base.GLM, base.MiniBatchRegressor):
             initializer=initializer if initializer else optim.initializers.Zeros(),
         )
 
-    def predict_one(self, x):
+    def predict_one(self, x,**kwargs):
         return self.loss.mean_func(self._raw_dot_one(x))
 
     def predict_many(self, X):

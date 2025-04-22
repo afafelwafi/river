@@ -63,11 +63,11 @@ class ALMAClassifier(base.Classifier):
     def _raw_dot(self, x):
         return utils.math.dot(x, self.w)
 
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x,**kwargs):
         yp = utils.math.sigmoid(self._raw_dot(x))
         return {False: 1 - yp, True: yp}
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         # Convert 0 to -1
         y = int(y or -1)
 

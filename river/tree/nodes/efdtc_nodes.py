@@ -135,7 +135,7 @@ class BaseEFDTBranch(DTBranch):
                 self.splitters[att_id] = splitter
             splitter.update(att_val, y, w)
 
-    def learn_one(self, x, y, *, w=1.0, tree=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None,**kwargs):
         """Update branch with the provided sample.
 
         Parameters

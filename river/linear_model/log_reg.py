@@ -89,7 +89,7 @@ class LogisticRegression(linear_model.base.GLM, base.MiniBatchClassifier):
             initializer=initializer if initializer else optim.initializers.Zeros(),
         )
 
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x,**kwargs):
         p = self.loss.mean_func(self._raw_dot_one(x))  # Convert logit to probability
         return {False: 1.0 - p, True: p}
 

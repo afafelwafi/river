@@ -164,7 +164,7 @@ class LeafNaiveBayesAdaptive(LeafMajorityClass):
         self._mc_correct_weight = 0.0
         self._nb_correct_weight = 0.0
 
-    def learn_one(self, x, y, *, w=1.0, tree=None):
+    def learn_one(self, x, y, *, w=1.0, tree=None,**kwargs):
         """Update the node with the provided instance.
 
         Parameters
@@ -192,7 +192,7 @@ class LeafNaiveBayesAdaptive(LeafMajorityClass):
 
         super().learn_one(x, y, w=w, tree=tree)
 
-    def prediction(self, x, *, tree=None):
+    def prediction(self, x, *, tree=None,**kwargs):
         """Get the probabilities per class for a given instance.
 
         Parameters

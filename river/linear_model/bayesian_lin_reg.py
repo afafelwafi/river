@@ -171,7 +171,7 @@ class BayesianLinearRegression(base.Regressor):
                 self._ss[min((fi, fj), (fj, fi))] = ss_row[j]
                 self._ss_inv[min((fi, fj), (fj, fi))] = ss_inv_row[j]
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         x_arr = np.array(list(x.values()))
         m_arr, ss_arr, ss_inv_arr = self._get_arrays(x.keys())
 
@@ -194,7 +194,7 @@ class BayesianLinearRegression(base.Regressor):
 
         self._set_arrays(x.keys(), m_arr, ss_arr, ss_inv_arr)
 
-    def predict_one(self, x, with_dist=False):
+    def predict_one(self, x, with_dist=False,**kwargs):
         """Predict the output of features `x`.
 
         Parameters

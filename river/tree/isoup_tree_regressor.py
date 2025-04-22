@@ -232,9 +232,9 @@ class iSOUPTreeRegressor(tree.HoeffdingTreeRegressor, base.MultiTargetRegressor)
         # Update target set
         self.targets.update(y.keys())
 
-        super().learn_one(x, y, w=w)
+        super().learn_one(x, y, w=w,**kwargs)
 
-    def predict_one(self, x):
+    def predict_one(self, x,**kwargs):
         pred = {}
         if self._root is not None:
             if isinstance(self._root, DTBranch):

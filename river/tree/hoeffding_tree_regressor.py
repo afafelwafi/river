@@ -216,7 +216,7 @@ class HoeffdingTreeRegressor(HoeffdingTree, base.Regressor):
 
             return new_adaptive
 
-    def learn_one(self, x, y, *, w=1.0):
+    def learn_one(self, x, y, *, w=1.0,**kwargs):
         """Train the tree model on sample x and corresponding target y.
 
         Parameters
@@ -250,7 +250,7 @@ class HoeffdingTreeRegressor(HoeffdingTree, base.Regressor):
             node = self._root
 
         if isinstance(node, HTLeaf):
-            node.learn_one(x, y, w=w, tree=self)
+            node.learn_one(x, y, w=w, tree=self,**kwargs)
             if self._growth_allowed and node.is_active():
                 if node.depth >= self.max_depth:  # Max depth reached
                     node.deactivate()
@@ -284,12 +284,12 @@ class HoeffdingTreeRegressor(HoeffdingTree, base.Regressor):
                 if isinstance(node, HTLeaf):
                     break
             # Learn from the sample
-            node.learn_one(x, y, w=w, tree=self)
+            node.learn_one(x, y, w=w, tree=self,**kwargs)
 
         if self._train_weight_seen_by_model % self.memory_estimate_period == 0:
             self._estimate_model_size()
 
-    def predict_one(self, x):
+    def predict_one(self, x,**kwargs):
         """Predict the target value using one of the leaf prediction strategies.
 
         Parameters

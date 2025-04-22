@@ -253,14 +253,14 @@ class ExtraTrees(base.Ensemble, metaclass=abc.ABCMeta):
         else:
             return self._detection_mode_off
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y,**kwargs):
         if not self.models:
             self._init_trees(len(x))
 
         self._total_instances += 1
         trained = []
         for i, model in enumerate(self.models):
-            y_hat = model.predict_one(x)
+            y_hat = model.predict_one(x,**kwargs)
             in_drift, in_warning = self._detect(
                 self._drift_detectors.get(i),
                 self._warn_detectors.get(i),
@@ -710,7 +710,7 @@ class OXTRegressor(ExtraTrees, base.Regressor):
     def _drift_input(self, y, y_hat) -> int | float:
         return abs(y - y_hat)
 
-    def predict_one(self, x: dict) -> base.typing.RegTarget:
+    def predict_one(self, x: dict,**kwargs) -> base.typing.RegTarget:
         if not self.models:
             self._init_trees(len(x))
             return 0.0  # type: ignore
@@ -720,7 +720,7 @@ class OXTRegressor(ExtraTrees, base.Regressor):
             weights = []
 
             for perf, model in zip(self._perfs, self.models):
-                preds.append(model.predict_one(x))
+                preds.append(model.predict_one(x,**kwargs))
                 weights.append(perf.get())
 
             sum_weights = sum(weights)
@@ -733,6 +733,6 @@ class OXTRegressor(ExtraTrees, base.Regressor):
                     preds = [(w / sum_weights) * pred for w, pred in zip(weights, preds)]
                 return sum(preds)
         else:
-            preds = [model.predict_one(x) for model in self.models]
+            preds = [model.predict_one(x,**kwargs) for model in self.models]
 
         return sum(preds) / len(preds)

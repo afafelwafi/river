@@ -268,7 +268,7 @@ class HalfSpaceTrees(anomaly.base.AnomalyDetector):
             self._first_window = False
             self.counter = 0
 
-    def score_one(self, x):
+    def score_one(self, x, **params):
         if self._first_window:
             return 0
 

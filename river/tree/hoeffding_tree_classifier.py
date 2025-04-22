@@ -315,7 +315,7 @@ class HoeffdingTreeClassifier(HoeffdingTree, base.Classifier):
                 # Manage memory
                 self._enforce_size_limit()
 
-    def learn_one(self, x, y, *, w=1.0):
+    def learn_one(self, x, y, *, w=1.0,**kwargs):
         """Train the model on instance x and corresponding target y.
 
         Parameters
@@ -362,7 +362,7 @@ class HoeffdingTreeClassifier(HoeffdingTree, base.Classifier):
             node = self._root
 
         if isinstance(node, HTLeaf):
-            node.learn_one(x, y, w=w, tree=self)
+            node.learn_one(x, y, w=w, tree=self,**kwargs)
             if self._growth_allowed and node.is_active():
                 if node.depth >= self.max_depth:  # Max depth reached
                     node.deactivate()
@@ -396,12 +396,12 @@ class HoeffdingTreeClassifier(HoeffdingTree, base.Classifier):
                 if isinstance(node, HTLeaf):
                     break
             # Learn from the sample
-            node.learn_one(x, y, w=w, tree=self)
+            node.learn_one(x, y, w=w, tree=self,**kwargs)
 
         if self._train_weight_seen_by_model % self.memory_estimate_period == 0:
             self._estimate_model_size()
 
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x,**kwargs):
         proba = {c: 0.0 for c in sorted(self.classes)}
         if self._root is not None:
             if isinstance(self._root, DTBranch):

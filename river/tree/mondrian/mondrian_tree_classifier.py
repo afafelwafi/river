@@ -443,7 +443,7 @@ class MondrianTreeClassifier(MondrianTree, base.Classifier):
     def _multiclass(self):
         return True
 
-    def learn_one(self, x, y):
+    def learn_one(self, x, y, **params):
         # Updating the previously seen classes with the new sample
         self._classes.add(y)
 
@@ -457,7 +457,7 @@ class MondrianTreeClassifier(MondrianTree, base.Classifier):
         # Incrementing iteration
         self.iteration += 1
 
-    def predict_proba_one(self, x):
+    def predict_proba_one(self, x, **params):
         """Predict the probability of the samples.
 
         Parameters
